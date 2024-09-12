@@ -11,6 +11,7 @@ typedef struct player
         int healthPoints;
         int Defense;
         void (*magicSpells[3])(void*);
+        char userSpells[3][50];
 
     } player;
 
@@ -92,6 +93,8 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
     }
 
 
+    char *ptruserSpells = userInput->userSpells;
+
     printf("\n");
     printf("3.- Select 3 magic spells for your character \n");
         printf("\t 1) FireCast   2) Freeze   3) LightingStrike   4) HealOrb   5) ShieldWall \n");
@@ -104,24 +107,33 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
             printf("Invalid choice.\n");
             continue;
         }
+        //Validate there are no repeats
 
         // Store the chosen spell
         switch(numberSpell) {
             case 1:
+                *ptruserSpells = "FireCast"; 
                 userInput->magicSpells[spellCount] = FireCast; break;
             case 2:
+                *ptruserSpells = "Freeze"; 
                 userInput->magicSpells[spellCount] = Freeze; break;
             case 3:
+                *ptruserSpells = "LightningStrike"; 
                 userInput->magicSpells[spellCount] = LightningStrike; break;
             case 4:
+                *ptruserSpells = "HealOrb"; 
                 userInput->magicSpells[spellCount] = HealOrb; break;
             case 5:
+                *ptruserSpells = "ShieldWall"; 
                 userInput->magicSpells[spellCount] = ShieldWall; break;
         }
 
+        printf(" %s ", *ptruserSpells);
+        ptruserSpells++;
         spellCount++;
     }
-    
+
+
     userInput->healthPoints = 100;
     userInput->Defense = 10;
 
@@ -184,6 +196,32 @@ int Defend(player *players){
     printf("Thy defenses are strengthened by fivefold. ");
     printf("\n");
 }
+void UserMagic(player *players){
+    
+    int numberSpellChoice = 0;
+
+    printf("Which spell do you wish to cast?\n");
+    printf("\n");
+    for(int i=0; i<3; i++ ){ //Goes
+        printf("\t 1) %s   2) %s   3) %s \n", players[0].magicSpells[i]);
+    }
+
+    printf("enter number:  ");
+    scanf("%d", &numberSpellChoice);  //stored answer in numberSpellChoice
+    
+    switch(numberSpellChoice){
+        case 1:
+            players[0].magicSpells[numberSpellChoice](&players[1]); break;
+        case 2:
+            players[0].magicSpells[numberSpellChoice](&players[1]); break;
+        case 3:
+            players[0].magicSpells[numberSpellChoice](&players[1]); break;
+        default:
+            printf("Invalid choice.\n");
+            break; 
+    }
+
+}
 
 void UserAction(player *players){
     int actionAnswer = 0;
@@ -199,8 +237,8 @@ void UserAction(player *players){
             Attack(players); break;
         case 2:
             Defend(players); break;
-    /*     case 3:
-            UserMagic(); break; */ 
+        case 3:
+            UserMagic(players); break; 
         default:
             printf("Invalid choice.\n");
             break; 
@@ -347,6 +385,18 @@ while(1){ //main menu loop
             if (players[1].healthPoints <= 0) {
                 printf("%s has fallen! Your victory is consecrated!\n", players[1].name);
                 break; exit(0);
+            }
+
+
+            printf("%s defense points: %d \n", players[0].name, players[0].Defense);
+            //Verify defense points every turn
+            if (players[0].Defense > 10) {
+                players[0].Defense = 10;
+                printf("%s defense points: %d \n", players[0].name, players[0].Defense);
+            }
+            if (players[1].Defense > 10) {
+                players[1].Defense = 10;
+                printf("%d defense points: \n", players[1].name, players[0].Defense);
             }
     }
 
