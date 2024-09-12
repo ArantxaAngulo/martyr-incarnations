@@ -28,26 +28,26 @@ void findTreasure() {
 
 void FireCast(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by a Fire Cast!\n", targetPlayer->name);
+    printf("%s is hit by Fire Cast!\n", targetPlayer->name);
     targetPlayer->healthPoints -= 15;  // Reduce health points by 15
     
     //printf("Remaining health: %d\n", (targetPlayer->healthPoints));
 }
 void Freeze(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by a Freeze!\n", targetPlayer->name);
+    printf("%s is hit by a Freeze spell!\n", targetPlayer->name);
     targetPlayer->healthPoints -= 15;  // Reduce health points by 15
 
 }
 void LightningStrike(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by a Lighting Strike!\n", targetPlayer->name);
+    printf("%s is hit by Lighting Strike!\n", targetPlayer->name);
     targetPlayer->healthPoints -= 15;  // Reduce health points by 15
 }
 void HealOrb(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by a Freeze!\n", targetPlayer->name);
-    targetPlayer->healthPoints -= 15;  // Reduce health points by 15
+    printf("%s sprayed itself with Holy Water!\n", targetPlayer->name);
+    targetPlayer->healthPoints += 10;  // Increase health points by 10
 }
 void ShieldWall(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
@@ -93,7 +93,8 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
     }
 
 
-    char *ptruserSpells = userInput->userSpells;
+    char *ptruserSpells = userInput->userSpells[0];
+    
 
     printf("\n");
     printf("3.- Select 3 magic spells for your character \n");
@@ -112,23 +113,24 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
         // Store the chosen spell
         switch(numberSpell) {
             case 1:
-                *ptruserSpells = "FireCast"; 
+                strcpy(ptruserSpells, "FireCast");
                 userInput->magicSpells[spellCount] = FireCast; break;
             case 2:
-                *ptruserSpells = "Freeze"; 
+                strcpy(ptruserSpells, "Freeze");
                 userInput->magicSpells[spellCount] = Freeze; break;
             case 3:
-                *ptruserSpells = "LightningStrike"; 
+                strcpy(ptruserSpells, "LightningStrike"); 
                 userInput->magicSpells[spellCount] = LightningStrike; break;
             case 4:
-                *ptruserSpells = "HealOrb"; 
+                strcpy(ptruserSpells, "HealOrb");
                 userInput->magicSpells[spellCount] = HealOrb; break;
             case 5:
-                *ptruserSpells = "ShieldWall"; 
+                strcpy(ptruserSpells, "ShieldWall");
                 userInput->magicSpells[spellCount] = ShieldWall; break;
         }
 
-        printf(" %s ", *ptruserSpells);
+        printf("%s was brought upon thee. Your soul is purified further. \n", ptruserSpells);
+        printf("\n");
         ptruserSpells++;
         spellCount++;
     }
@@ -138,7 +140,7 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
     userInput->Defense = 10;
 
     printf("\n");
-    printf("Player 1: \n");
+    printf("PLAYER 1 \n");
     printf("Name: %s\n", userInput->name);
     printf("Weapon: %s\n", userInput->characterWeapon);
     printf("\n");
@@ -174,15 +176,18 @@ int Attack(player *players){
     printf("\n");
 
     if(randomDice >= players[1].Defense && randomDice < 20){
+        printf("%s 's %d attack vs %s %d defense . \n", players[0].name, randomDice, players[1].name, players[1].Defense);
         printf("Your blow found its mark. ");
         printf("%s lost 10 health\n", players[1].name);
         printf("\n");
         
     } else if (randomDice == 20){
+        printf("%s 's %d attack vs %s %d defense . \n", players[0].name, randomDice, players[1].name, players[1].Defense);
         printf("Thy strike was delivered with unfailing wrath. ");
         printf("%s lost 20 health", players[1].name);
         printf("\n");
     } else {
+        printf("%s 's %d attack vs %s %d defense . \n", players[0].name, randomDice, players[1].name, players[1].Defense);
         printf("You have missed, and the burden of thy failure lingers. ");
         printf("Remaining health: %d\n", (players[0].healthPoints-(randomDice)));
         printf("\n");
@@ -193,7 +198,8 @@ int Attack(player *players){
 int Defend(player *players){
     players[0].Defense += 5;
     printf("\n");
-    printf("Thy defenses are strengthened by fivefold. ");
+    printf("Thy defenses are strengthened by fivefold during this intonation. ");
+    printf("%s defense points: %d \n", players[0].name, players[0].Defense);
     printf("\n");
 }
 void UserMagic(player *players){
@@ -202,8 +208,9 @@ void UserMagic(player *players){
 
     printf("Which spell do you wish to cast?\n");
     printf("\n");
-    for(int i=0; i<3; i++ ){ //Goes
-        printf("\t 1) %s   2) %s   3) %s \n", players[0].magicSpells[i]);
+
+    for(int i=0; i<3; i++ ){ //Iterates from 0 to 2, prints all spells in userSpells array
+        printf("\t 1) %s   2) %s   3) %s \n", players[0].userSpells[i]);
     }
 
     printf("enter number:  ");
@@ -279,8 +286,15 @@ void CPUAction(player *players){
                 printf("Thy enemy is strengthened by fivefold. \n"); break;
                 printf("\n");
         case 3:
+        if( strcmp(players[1].magicSpells[randomIndex], "HealOrb" ) == 0  ){
+            players[1].magicSpells[randomIndex](&players[1]); //if the spell chosen in HealOrb, then it will throw players[1] instead
+        } else if ( strcmp(players[1].magicSpells[randomIndex], "ShieldWall" ) == 0 ){
+
+        } else { //every other spell. Code will throw player[0] (User) as target instead
             players[1].magicSpells[randomIndex](&players[0]);
-        }   
+        }
+ 
+    }   
         
 }
 void RandomEvent(){
@@ -318,7 +332,7 @@ while(1){ //main menu loop
     printf("Select one of the following options:\n");
     printf("\n");
 
-    printf("1.- Create Character\n");
+    printf("1.- New Game\n");
     printf("2.- Exit\n");
     printf("3.- Help\n");
     printf("\n");
@@ -388,15 +402,16 @@ while(1){ //main menu loop
             }
 
 
-            printf("%s defense points: %d \n", players[0].name, players[0].Defense);
             //Verify defense points every turn
             if (players[0].Defense > 10) {
                 players[0].Defense = 10;
-                printf("%s defense points: %d \n", players[0].name, players[0].Defense);
+                printf("%s defense points reverted back to: %d \n", players[0].name, players[0].Defense);
+                printf("\n");
             }
             if (players[1].Defense > 10) {
                 players[1].Defense = 10;
-                printf("%d defense points: \n", players[1].name, players[0].Defense);
+                printf("%s defense points reverted back to: %d\n", players[1].name, players[0].Defense);
+                printf("\n");
             }
     }
 
