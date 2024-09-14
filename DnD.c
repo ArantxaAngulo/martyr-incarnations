@@ -48,6 +48,7 @@ void HealOrb(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
     printf("%s sprayed itself with Holy Water!\n", targetPlayer->name);
     targetPlayer->healthPoints += 10;  // Increase health points by 10
+    return 0;
 }
 void ShieldWall(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
@@ -143,6 +144,10 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
     printf("PLAYER 1 \n");
     printf("Name: %s\n", userInput->name);
     printf("Weapon: %s\n", userInput->characterWeapon);
+
+        for(int i=0; i<3; i++ ){ //Iterates from 0 to 2, prints all spells in userSpells array
+        printf("\t %d) %s   ", (i+1), userInput->userSpells[i]);
+    }
     printf("\n");
     printf("\n");
 }
@@ -208,21 +213,37 @@ void UserMagic(player *players){
 
     printf("Which spell do you wish to cast?\n");
     printf("\n");
-
+    
     for(int i=0; i<3; i++ ){ //Iterates from 0 to 2, prints all spells in userSpells array
-        printf("\t 1) %s   2) %s   3) %s \n", players[0].userSpells[i]);
+        printf("\t %d) %s  ", (i+1), players[0].userSpells[i]);
     }
+    printf("\n");
+    printf("\n");
 
     printf("enter number:  ");
     scanf("%d", &numberSpellChoice);  //stored answer in numberSpellChoice
+
     
     switch(numberSpellChoice){
         case 1:
-            players[0].magicSpells[numberSpellChoice](&players[1]); break;
+             if(strcmp(players[0].magicSpells[0], "H") == 0 ){
+                printf("IN");
+                players[0].magicSpells[0](&players[0]); break;
+             } else {
+                players[0].magicSpells[0](&players[1]); break;
+             }
         case 2:
-            players[0].magicSpells[numberSpellChoice](&players[1]); break;
+            if(strcmp(players[0].magicSpells[1], "HealOrb") == 0 ){
+                players[0].magicSpells[1](&players[0]); break;
+             } else {
+                players[0].magicSpells[1](&players[1]); break;
+             }
         case 3:
-            players[0].magicSpells[numberSpellChoice](&players[1]); break;
+            if(strcmp(players[0].magicSpells[2], "HealOrb") == 0 ){
+                players[0].magicSpells[2](&players[0]); break;
+             } else {
+                players[0].magicSpells[2](&players[1]); break;
+             }
         default:
             printf("Invalid choice.\n");
             break; 
