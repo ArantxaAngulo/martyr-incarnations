@@ -10,6 +10,8 @@ typedef struct player
         char characterWeapon[50];
         int healthPoints;
         int Defense;
+        int frozenFlag;
+        int thornsFlag;
         void (*magicSpells[3])(void*);
         char userSpells[3][50];
 
@@ -28,32 +30,36 @@ void findTreasure() {
 
 void FireCast(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by Fire Cast!\n", targetPlayer->name);
+    printf("%s is hit by Fire Cast!  ", targetPlayer->name);
     targetPlayer->healthPoints -= 15;  // Reduce health points by 15
     
-    //printf("Remaining health: %d\n", (targetPlayer->healthPoints));
+    printf("Remaining health: %d\n", (targetPlayer->healthPoints));
 }
 void Freeze(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by a Freeze spell!\n", targetPlayer->name);
-    targetPlayer->healthPoints -= 15;  // Reduce health points by 15
+    printf("A Freeze spell was casted !  Karma caused %s to withdraw during this intonation.  \n", targetPlayer->name);
+     targetPlayer->frozenFlag = 1;  // Set the player's frozen status
 
 }
 void LightningStrike(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by Lighting Strike!\n", targetPlayer->name);
+    printf("%s is hit by Lighting Strike!  ", targetPlayer->name);
     targetPlayer->healthPoints -= 15;  // Reduce health points by 15
+    printf("Remaining health: %d\n", (targetPlayer->healthPoints));
 }
 void HealOrb(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s sprayed itself with Holy Water!\n", targetPlayer->name);
+ 
+    printf("%s sprayed itself with Holy Water!  ", targetPlayer->name);
     targetPlayer->healthPoints += 10;  // Increase health points by 10
-    return 0;
+
+    printf("Total health: %d\n", (targetPlayer->healthPoints));
+
 }
-void ShieldWall(void* target) {
+void Thorns(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
-    printf("%s is hit by a Shield Wall!\n", targetPlayer->name);
-    targetPlayer->healthPoints -= 15;  // Reduce health points by 15
+    printf("%s casted Thorns!\n", targetPlayer->name);
+    targetPlayer->thornsFlag = 2;
 }
 
 void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINPUT STRUCT FROM MAIN!
@@ -92,14 +98,11 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
             printf("Invalid choice.\n");
             break; 
     }
-
-
-    char *ptruserSpells = userInput->userSpells[0];
     
 
     printf("\n");
     printf("3.- Select 3 magic spells for your character \n");
-        printf("\t 1) FireCast   2) Freeze   3) LightingStrike   4) HealOrb   5) ShieldWall \n");
+        printf("\t 1) FireCast   2) Freeze   3) LightingStrike   4) HealOrb   5) Thorns \n");
     while (spellCount < 3) {
         printf("Enter a number for magic spell #%d: ", spellCount + 1);
         scanf("%d", &numberSpell);
@@ -114,25 +117,24 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
         // Store the chosen spell
         switch(numberSpell) {
             case 1:
-                strcpy(ptruserSpells, "FireCast");
+                strcpy(userInput->userSpells[spellCount], "FireCast");
                 userInput->magicSpells[spellCount] = FireCast; break;
             case 2:
-                strcpy(ptruserSpells, "Freeze");
+                strcpy(userInput->userSpells[spellCount], "Freeze");
                 userInput->magicSpells[spellCount] = Freeze; break;
             case 3:
-                strcpy(ptruserSpells, "LightningStrike"); 
+                strcpy(userInput->userSpells[spellCount], "LightningStrike"); 
                 userInput->magicSpells[spellCount] = LightningStrike; break;
             case 4:
-                strcpy(ptruserSpells, "HealOrb");
+                strcpy(userInput->userSpells[spellCount], "HealOrb");
                 userInput->magicSpells[spellCount] = HealOrb; break;
             case 5:
-                strcpy(ptruserSpells, "ShieldWall");
-                userInput->magicSpells[spellCount] = ShieldWall; break;
+                strcpy(userInput->userSpells[spellCount], "Thorns");
+                userInput->magicSpells[spellCount] = Thorns; break;
         }
 
-        printf("%s was brought upon thee. Your soul is purified further. \n", ptruserSpells);
+        printf("%s was brought upon thee. Your soul is purified further. \n", userInput->userSpells[spellCount]);
         printf("\n");
-        ptruserSpells++;
         spellCount++;
     }
 
@@ -158,14 +160,14 @@ void GenerateCPU(player *CPU){
     CPU->Defense = 10;        // Default defense
 
      // Assigning spells to CPU
-    void (*availableSpells[5])(void*) = {FireCast, Freeze, LightningStrike, HealOrb, ShieldWall};
+    void (*availableSpells[5])(void*) = {FireCast, Freeze, LightningStrike, HealOrb, Thorns};
     for (int i = 0; i < 3; i++) {
         int randomIndex = rand() % 5;  // Choose a random spell
         CPU->magicSpells[i] = availableSpells[randomIndex];
     }
 }
 void Help(){
-    printf("MATRYR INCARNATIONS ---alpha v1.0.0\n");
+    printf("MATRYR INCARNATIONS ---alpha v1.2.0\n");
     printf("\n");
 
 
@@ -223,27 +225,33 @@ void UserMagic(player *players){
     printf("enter number:  ");
     scanf("%d", &numberSpellChoice);  //stored answer in numberSpellChoice
 
-    
+
     switch(numberSpellChoice){
         case 1:
-             if(strcmp(players[0].magicSpells[0], "H") == 0 ){
-                printf("IN");
+             if(strcmp(players[0].userSpells[0], "HealOrb") == 0 ){
+                //printf("IN\n");
                 players[0].magicSpells[0](&players[0]); break;
              } else {
                 players[0].magicSpells[0](&players[1]); break;
              }
+             break;
+
         case 2:
-            if(strcmp(players[0].magicSpells[1], "HealOrb") == 0 ){
+            if(strcmp(players[0].userSpells[1], "HealOrb") == 0 ){
                 players[0].magicSpells[1](&players[0]); break;
-             } else {
+            } else {
                 players[0].magicSpells[1](&players[1]); break;
-             }
+            }
+            break;
+
         case 3:
-            if(strcmp(players[0].magicSpells[2], "HealOrb") == 0 ){
-                players[0].magicSpells[2](&players[0]); break;
-             } else {
+            if(strcmp(players[0].userSpells[2], "HealOrb") == 0 ){
+                players[0].magicSpells[2](&players[0]); break; 
+            } else {
                 players[0].magicSpells[2](&players[1]); break;
-             }
+            }
+            break;
+
         default:
             printf("Invalid choice.\n");
             break; 
@@ -302,15 +310,14 @@ void CPUAction(player *players){
                 } break;
         case 2:
                 printf("\n");
-                printf("Your enemy sprays itself with Holy Water\n");
                 players[1].Defense += 5;
                 printf("Thy enemy is strengthened by fivefold. \n"); break;
                 printf("\n");
         case 3:
         if( strcmp(players[1].magicSpells[randomIndex], "HealOrb" ) == 0  ){
             players[1].magicSpells[randomIndex](&players[1]); //if the spell chosen in HealOrb, then it will throw players[1] instead
-        } else if ( strcmp(players[1].magicSpells[randomIndex], "ShieldWall" ) == 0 ){
-
+        } else if ( strcmp(players[1].magicSpells[randomIndex], "Thorns" ) == 0 ){
+            players[1].magicSpells[randomIndex](&players[1]);
         } else { //every other spell. Code will throw player[0] (User) as target instead
             players[1].magicSpells[randomIndex](&players[0]);
         }
@@ -399,6 +406,12 @@ while(1){ //main menu loop
         UserAction(players);
         turn = !turn; //changes turn
 
+        if (players[turn].frozenFlag == 1) {
+            printf("\n%s is frozen . \n", players[turn].name);
+            printf("\n");
+            players[turn].frozenFlag = 0;  // Unfreeze the player after they skip a turn
+            turn = !turn;
+        } else {
             if(turn == 0){ //User turn
                 RandomEvent();
                 UserAction(players);
@@ -411,10 +424,11 @@ while(1){ //main menu loop
                 printf("==\n");
                 printf("\n");
             }
+        }
 
             //Verify health points
             if (players[0].healthPoints <= 0) {
-                printf("%s has been vanquished!! MORTEM.\n", players[0].name);
+                printf("%s has been vanquished! MORTEM.\n", players[0].name);
                 break; exit(0);
             }
             if (players[1].healthPoints <= 0) {
