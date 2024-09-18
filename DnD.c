@@ -13,7 +13,7 @@ typedef struct player
         int frozenFlag;
         int thornsFlag;
         void (*magicSpells[3])(void*);
-        char userSpells[3][50];
+        char userSpells[3][50]; //array for display and string comparison
 
     } player;
 
@@ -38,7 +38,7 @@ void FireCast(void* target) {
 void Freeze(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
     printf("A Freeze spell was casted !  Karma caused %s to withdraw during this intonation.  \n", targetPlayer->name);
-     targetPlayer->frozenFlag = 1;  // Set the player's frozen status
+    targetPlayer->frozenFlag = 1;  // Set the player's frozen status
 
 }
 void LightningStrike(void* target) {
@@ -58,6 +58,7 @@ void HealOrb(void* target) {
 }
 void Thorns(void* target) {
     player* targetPlayer = (player*)target;  // Cast the generic void* to a player*
+
     printf("%s casted Thorns!\n", targetPlayer->name);
     targetPlayer->thornsFlag = 2;
 }
@@ -85,7 +86,7 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
     printf("\n");
     printf("2.- Select a weapon for your character \n");
         printf("\t 1) Crucifix   2) Rosary   3) Dagger \n");
-    printf("enter number:  ");
+    printf("\033[1;31mENTER A NUMBER:  \033[0m");
     scanf("%d", &numberWeapon);  //stored answer in numberRace
     switch(numberWeapon){
         case 1:
@@ -104,7 +105,7 @@ void CharacterCreation(player *userInput){//PASSES BY REFERENCE ORIGINAL USERINP
     printf("3.- Select 3 magic spells for your character \n");
         printf("\t 1) FireCast   2) Freeze   3) LightingStrike   4) HealOrb   5) Thorns \n");
     while (spellCount < 3) {
-        printf("Enter a number for magic spell #%d: ", spellCount + 1);
+        printf("\033[1;31mENTER A NUMBER FOR MAGIC SPELL #%d:  \033[0m", spellCount + 1);
         scanf("%d", &numberSpell);
 
         // Validate the choice
@@ -160,14 +161,27 @@ void GenerateCPU(player *CPU){
     CPU->Defense = 10;        // Default defense
 
      // Assigning spells to CPU
-    void (*availableSpells[5])(void*) = {FireCast, Freeze, LightningStrike, HealOrb, Thorns};
+    void (*availableSpells[5])(void*) = {FireCast, Freeze, LightningStrike, HealOrb, Thorns}; //array of functions
+    char *spellNames[5] = {"FireCast", "Freeze", "LightningStrike", "HealOrb", "Thorns"}; //array of chars
+
     for (int i = 0; i < 3; i++) {
-        int randomIndex = rand() % 5;  // Choose a random spell
-        CPU->magicSpells[i] = availableSpells[randomIndex];
+        int randomIndex = rand() % 5;   // Choose a random spell
+
+        CPU->magicSpells[i] = availableSpells[randomIndex]; //Add the random spell to CPU magicspells array 
+        strcpy(CPU->userSpells[i], spellNames[randomIndex]); //add the random spell to CPU index userSpells array. 
     }
+
+    printf("\n");
+    printf("CPU \n");
+    printf("Name: %s\n", CPU->name);
+    printf("Weapon: %s\n", CPU->characterWeapon);
+    for(int i=0; i<3; i++ ){ //Iterates from 0 to 2, prints all spells in userSpells array
+        printf("\t %d) %s   ", (i+1), CPU->userSpells[i]);
+    }
+    printf("\n");
 }
 void Help(){
-    printf("MATRYR INCARNATIONS ---alpha v1.2.0\n");
+    printf("MATRYR INCARNATIONS ---alpha v1.3.0\n");
     printf("\n");
 
 
@@ -222,7 +236,7 @@ void UserMagic(player *players){
     printf("\n");
     printf("\n");
 
-    printf("enter number:  ");
+    printf("\033[1;31mENTER A NUMBER:  \033[0m");
     scanf("%d", &numberSpellChoice);  //stored answer in numberSpellChoice
 
 
@@ -259,14 +273,14 @@ void UserMagic(player *players){
 
 }
 
-void UserAction(player *players){
+int UserAction(player *players){
     int actionAnswer = 0;
 
     printf("What do you want to do?\n");
     printf("\t 1) Attack   2) Defend   3) Use Magic \n");
 
     printf("\n");
-    printf("enter number:  ");
+    printf("\033[1;31mENTER A NUMBER:  \033[0m");
     scanf("%d", &actionAnswer);  //stored answer in actionAnswer
     switch(actionAnswer){
         case 1:
@@ -279,8 +293,9 @@ void UserAction(player *players){
             printf("Invalid choice.\n");
             break; 
     }
+return actionAnswer; //for defend gameplay loop in main
 }
-void CPUAction(player *players){
+int CPUAction(player *players){
         
         int randomAction= rand() % (3 + 1);  // Choose a random action from 1 to 3 
         int randomDice = 0;
@@ -297,31 +312,35 @@ void CPUAction(player *players){
                 printf("\n");
 
                 if(randomDice >= players[0].Defense && randomDice < 20){
+                    printf("%s 's %d attack vs %s %d defense . \n", players[1].name, randomDice, players[0].name, players[0].Defense);
                     printf("Your enemy has struck against thee. ");
                     printf("%s lost 10 health\n", players[0].name);
                     printf("\n");
                 } else if (randomDice == 20){
+                    printf("%s 's %d attack vs %s %d defense . \n", players[1].name, randomDice, players[0].name, players[0].Defense);
                     printf("Your enemy's blow was delivered with grievous precision. ");
                     printf("%s lost 20 health\n", players[0].name);
                     printf("\n");
                 } else {
+                    printf("%s 's %d attack vs %s %d defense . \n", players[1].name, randomDice, players[0].name, players[0].Defense);
                     printf("Your enemy's strike has been in vain. You remain untouched. \n");
                     printf("\n");
                 } break;
         case 2:
                 printf("\n");
                 players[1].Defense += 5;
-                printf("Thy enemy is strengthened by fivefold. \n"); break;
-                printf("\n");
+                printf("%s chose to defend. \n", players[1].name);
+                printf("Thy enemy is strengthened by fivefold. \n");
+                printf("\n"); 
+                break;
         case 3:
-        if( strcmp(players[1].magicSpells[randomIndex], "HealOrb" ) == 0  ){
-            players[1].magicSpells[randomIndex](&players[1]); //if the spell chosen in HealOrb, then it will throw players[1] instead
-        } else if ( strcmp(players[1].magicSpells[randomIndex], "Thorns" ) == 0 ){
-            players[1].magicSpells[randomIndex](&players[1]);
-        } else { //every other spell. Code will throw player[0] (User) as target instead
-            players[1].magicSpells[randomIndex](&players[0]);
-        }
- 
+                if( strcmp(players[1].userSpells[randomIndex], "HealOrb") == 0 ){
+                    players[1].magicSpells[randomIndex](&players[1]); break; //if the spell chosen in HealOrb, then it will throw players[1] instead
+                
+                } else { //every other spell. Code will throw player[0] (User) as target instead
+                    players[1].magicSpells[randomIndex](&players[0]); break;
+                } break;
+    return randomAction;
     }   
         
 }
@@ -337,7 +356,9 @@ int main(){
     srand(time(NULL));
     int menuAnswer = 0;
     player players[2]; // players[0] is for the user, players[1] is for the CPU
-    int turn = 0;  // 0 for Player 1 (User), 1 for Player 2 (CPU)
+    int turn = 0;  // 0 for User, 1 for CPU
+    int actionAnswer = 0;  //store user action
+    int randomAction = 0; //store cpu action
 
     printf("\n");
     printf("_______  _______  _______ _________          _______           _________ _        _______  _______  _______  _        _______ __________________ _______  _       _________ _______ \n");
@@ -364,7 +385,7 @@ while(1){ //main menu loop
     printf("2.- Exit\n");
     printf("3.- Help\n");
     printf("\n");
-    printf("enter a number: ");
+    printf("\033[1;31mENTER A NUMBER:  \033[0m");
     scanf("%d", &menuAnswer);
 
     switch(menuAnswer){
@@ -398,35 +419,81 @@ while(1){ //main menu loop
     printf("\n");
 
     printf("\n");
-    turn = 0; //redundant, but ensures user always goes first
-    while (players[0].healthPoints > 0 && players[1].healthPoints > 0) {
-        
-        //User turn is first
-        RandomEvent();
-        UserAction(players);
-        turn = !turn; //changes turn
+   
+ //User turn is first
+    RandomEvent();
+    actionAnswer = UserAction(players);
+    turn = !turn; //changes turn to CPU
 
+    int playerDefendedLastTurn = 0;  // Flag to track if the player defended last turn
+    int cpuDefendedLastTurn = 0;     // Flag to track if the CPU defended last turn
+
+    while (players[0].healthPoints > 0 && players[1].healthPoints > 0) { //Core Gameplay Loop
+    //printf("%s flag is: %d", players[turn].name, players[turn].frozenFlag);
+
+
+        // Revert defense points at the start of the player's turn if they defended last turn
+        if (turn == 0 && playerDefendedLastTurn) {
+            if (players[0].Defense > 10) {
+                players[0].Defense = 10;
+                printf("%s defense points reverted back to: %d \n", players[0].name, players[0].Defense);
+            }
+            playerDefendedLastTurn = 0;  // Reset the flag after defense reverts
+        }
+
+        // Revert CPU's defense at the start of its turn if it defended last turn
+        if (turn == 1 && cpuDefendedLastTurn) {
+            if (players[1].Defense > 10) {
+                players[1].Defense = 10;
+                printf("%s defense points reverted back to: %d\n", players[1].name, players[1].Defense);
+            }
+            cpuDefendedLastTurn = 0;  // Reset the flag after defense reverts
+        }
+
+        //Check for frozen flag
         if (players[turn].frozenFlag == 1) {
             printf("\n%s is frozen . \n", players[turn].name);
             printf("\n");
             players[turn].frozenFlag = 0;  // Unfreeze the player after they skip a turn
-            turn = !turn;
+            turn = !turn;  // Switch to the next player
         } else {
-            if(turn == 0){ //User turn
+            if (turn == 0){ //User turn
+                printf("\n");
+                printf("\n");
                 RandomEvent();
-                UserAction(players);
-                printf("==\n");
+                actionAnswer = UserAction(players);
+
+                // Check if the user defended this turn
+                if (actionAnswer == 2) {
+                    playerDefendedLastTurn = 1;  // Set flag indicating the player defended
+                }
+                printf("===\n");
                 printf("\n");
                 turn = 1;
-            } else { //CPU turn
-                CPUAction(players);
-                turn = 0;
-                printf("==\n");
+
+            } else if (turn == 1){ //CPU turn
                 printf("\n");
+                printf("\n");
+
+                randomAction = CPUAction(players);
+
+                if (randomAction == 2) {
+                cpuDefendedLastTurn = 1;  // Set flag indicating the CPU defended
+                }
+
+                printf("===\n");
+                printf("\n");
+                turn = 0;
             }
         }
+        //Verify players defense points every turn
+                if (players[turn].Defense > 10) {
+                    players[turn].Defense = 10;
+                    printf("%s defense points reverted back to: %d \n", players[turn].name, players[turn].Defense);
+                    printf("\n");
+                }
 
-            //Verify health points
+        //Verify health points
             if (players[0].healthPoints <= 0) {
                 printf("%s has been vanquished! MORTEM.\n", players[0].name);
                 break; exit(0);
@@ -435,21 +502,7 @@ while(1){ //main menu loop
                 printf("%s has fallen! Your victory is consecrated!\n", players[1].name);
                 break; exit(0);
             }
-
-
-            //Verify defense points every turn
-            if (players[0].Defense > 10) {
-                players[0].Defense = 10;
-                printf("%s defense points reverted back to: %d \n", players[0].name, players[0].Defense);
-                printf("\n");
-            }
-            if (players[1].Defense > 10) {
-                players[1].Defense = 10;
-                printf("%s defense points reverted back to: %d\n", players[1].name, players[0].Defense);
-                printf("\n");
-            }
     }
-
 
     return 0;
 }
