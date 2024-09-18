@@ -296,8 +296,8 @@ int UserAction(player *players){
 return actionAnswer; //for defend gameplay loop in main
 }
 int CPUAction(player *players){
-        
-        int randomAction= rand() % (3 + 1);  // Choose a random action from 1 to 3 
+        srand(time(NULL));
+        int randomAction= rand() % 3 + 1;  // Choose a random action from 1 to 3 
         int randomDice = 0;
 
         int randomIndex = rand() % 3;  // Choose a random spell from index 0 to 2 
@@ -340,6 +340,8 @@ int CPUAction(player *players){
                 } else { //every other spell. Code will throw player[0] (User) as target instead
                     players[1].magicSpells[randomIndex](&players[0]); break;
                 } break;
+        default:
+            printf("default in cpuaction"); break;
     return randomAction;
     }   
         
